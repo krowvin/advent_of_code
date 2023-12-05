@@ -1,3 +1,3 @@
-# advent_of_code
+# Advent of Code
 
-My answers for the https://adventofcode.com/ challenge
+My solutions for the https://adventofcode.com/ challenge
