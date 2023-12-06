@@ -1,12 +1,9 @@
 # 12/05/2023
 # Start: 7:42PM -06:00
-# End  :  9:09PM -06:00
-# Horribly inefficient with memory
-# TODO: Instead of making huge lists, try to find a clever way to map the values that way
+# End  : 9:41PM -06:00
 # /u/krowvin
 # https://adventofcode.com/2023/day/5
 
-import sys
 import time
 # Enable extra output
 DEBUG = False
@@ -17,7 +14,7 @@ INPUT_FILE = "input.txt"
 # Seed 14, soil 14, fertilizer 53, water 49, light 42, temperature 42, humidity 43, location 43.
 # Seed 55, soil 57, fertilizer 57, water 53, light 46, temperature 82, humidity 82, location 86.
 # Seed 13, soil 13, fertilizer 52, water 41, light 34, temperature 34, humidity 35, location 35.
-
+# PASSING
 
 almanac = {}    
 seeds = []
@@ -33,9 +30,12 @@ def parseInput(lines: str):
     global seeds
     a_map = "overflow"
     for line in lines:
+        # Skip empty lines
         if not line: continue
+        # Determine our almanac map keys
         if line.find(" map:") >= 0:
             a_map = line.split(" map:")[0]
+        # Seeds? (might not be on the first line!)
         elif line.startswith("seeds: "):
             seeds = list(map(int, line.split(": ")[1].split(" ")))
         else:
@@ -54,8 +54,9 @@ def sourceToDestination(a_map, requested_src):
         MAX_SRS_VAL = srs + rl
         # See if our requested source value falls in that range
         if MIN_SRS_VAL <= requested_src <= MAX_SRS_VAL:
-            # Determine the destination value based on this
+            # Get a positive value from the minimum
             delta = abs(MIN_SRS_VAL - requested_src)
+            # Add that value to our destination range start
             return drs + delta
     # Return the entry if it does not exist
     return requested_src
@@ -78,15 +79,16 @@ def run():
         output[seed] = None
         output_str += f"Seed {seed}, "
         for entry in almanac:
-            # Lookup soil from seed
+            # Map the previous destination to the next entry in the almanac
             dst = sourceToDestination(entry, dst)
             output_str += f'{entry.split("-")[-1]} {dst}, '
         print("".join(output_str[:-2]))
-        # Set the seed location
+        # Set the seed locations
         output["seeds"].append(seed)
         output["locations"].append(dst)
     lowest_loc = min(output["locations"])
     print(f'The lowest location number is {lowest_loc} for seed {output["seeds"][output["locations"].index(lowest_loc)]}')
     print(f"Completed in {round(time.perf_counter() - start_ns, 4)}s")
+
 if __name__ == "__main__":
     run()
