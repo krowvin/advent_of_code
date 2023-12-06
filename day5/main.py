@@ -7,11 +7,11 @@
 # https://adventofcode.com/2023/day/5
 
 import sys
-
+import time
 # Enable extra output
 DEBUG = False
 INPUT_FILE = "input.txt"
-
+# INPUT_FILE = "test_input.txt"
 # Run test_input.txt and see if you get the expected lowest location of 35:
 # Seed 79, soil 81, fertilizer 81, water 81, light 74, temperature 78, humidity 78, location 82.
 # Seed 14, soil 14, fertilizer 53, water 49, light 42, temperature 42, humidity 43, location 43.
@@ -42,13 +42,23 @@ def parseInput(lines: str):
             # dest range start, source range start, range length
             drs, srs, rl = list(map(int, line.split(" ")))
             if a_map not in almanac:
-                almanac[a_map] = {
-                    "dst": [x for x in range(drs, drs + rl)],
-                    "src": [x for x in range(srs, srs + rl)]
-                }
+                almanac[a_map] = [[drs, srs, rl]]
             else:
-                almanac[a_map]["dst"].extend([x for x in range(drs, drs + rl)])
-                almanac[a_map]["src"].extend([x for x in range(srs, srs + rl)])
+                almanac[a_map].append([drs, srs, rl])
+
+def sourceToDestination(a_map, requested_src):
+    # dest range start, source range start, range length
+    for drs, srs, rl in almanac[a_map]:
+        # Determine our source range
+        MIN_SRS_VAL = srs
+        MAX_SRS_VAL = srs + rl
+        # See if our requested source value falls in that range
+        if MIN_SRS_VAL <= requested_src <= MAX_SRS_VAL:
+            # Determine the destination value based on this
+            delta = abs(MIN_SRS_VAL - requested_src)
+            return drs + delta
+    # Return the entry if it does not exist
+    return requested_src
 
 def getDestination(a_map, src):
     try:
@@ -58,9 +68,9 @@ def getDestination(a_map, src):
 
 
 def run():
+    start_ns = time.perf_counter()
     # Populate the almanac with our data
-    parseInput(readInputFile("input.txt"))
-    print('parse done')
+    parseInput(readInputFile(INPUT_FILE))
     output = {"seeds": [], "locations": []}
     for seed in seeds:
         output_str = ""
@@ -69,7 +79,7 @@ def run():
         output_str += f"Seed {seed}, "
         for entry in almanac:
             # Lookup soil from seed
-            dst = getDestination(entry, dst)
+            dst = sourceToDestination(entry, dst)
             output_str += f'{entry.split("-")[-1]} {dst}, '
         print("".join(output_str[:-2]))
         # Set the seed location
@@ -77,5 +87,6 @@ def run():
         output["locations"].append(dst)
     lowest_loc = min(output["locations"])
     print(f'The lowest location number is {lowest_loc} for seed {output["seeds"][output["locations"].index(lowest_loc)]}')
+    print(f"Completed in {round(time.perf_counter() - start_ns, 4)}s")
 if __name__ == "__main__":
     run()
